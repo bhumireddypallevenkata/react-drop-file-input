@@ -1,6 +1,7 @@
 import './App.css';
 
 import DropFileInput from './components/drop-file-input/DropFileInput';
+import Board from './components/tic-tac-toe/board';
 
 function App() {
 
@@ -16,6 +17,10 @@ function App() {
             <DropFileInput
                 onFileChange={(files) => onFileChange(files)}
             />
+
+
+            <Board></Board>
+
         </div>
     );
 }

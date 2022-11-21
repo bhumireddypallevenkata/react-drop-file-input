@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import './drop-file-input.css';
 
-import { ImageConfig } from '../../config/ImageConfig'; 
+import { ImageConfig } from '../../config/ImageConfig';
 import uploadImg from '../../assets/cloud-upload-regular-240.png';
+import axios from 'axios';
 
 const DropFileInput = props => {
 
@@ -21,17 +22,34 @@ const DropFileInput = props => {
     const onFileDrop = (e) => {
         const newFile = e.target.files[0];
         if (newFile) {
-            const updatedList = [...fileList, newFile];
-            setFileList(updatedList);
-            props.onFileChange(updatedList);
+            fileSubmit(newFile)
         }
     }
 
     const fileRemove = (file) => {
-        const updatedList = [...fileList];
-        updatedList.splice(fileList.indexOf(file), 1);
-        setFileList(updatedList);
-        props.onFileChange(updatedList);
+        axios.delete(`http://localhost:8080/upload?name=${file}`)
+            .then((res) => {
+                const updatedList = [...fileList];
+                updatedList.splice(fileList.indexOf(file), 1);
+                setFileList(updatedList);
+                props.onFileChange(updatedList);
+            })
+            .catch((err) => console.error(err));
+    }
+
+    const fileSubmit = (newFile) => {
+        const formData = new FormData()
+        formData.append(newFile.name, newFile);
+        axios.post('http://localhost:8080/upload', formData)
+            .then((res) => {
+                const updatedList = [...fileList, newFile];
+                setFileList(updatedList);
+                props.onFileChange(updatedList);
+            })
+            .catch((err) => {
+                console.error(err)
+                fileRemove(newFile)
+            });
     }
 
     return (
@@ -47,7 +65,7 @@ const DropFileInput = props => {
                     <img src={uploadImg} alt="" />
                     <p>Drag & Drop your files here</p>
                 </div>
-                <input type="file" value="" onChange={onFileDrop}/>
+                <input type="file" value="" onChange={onFileDrop} />
             </div>
             {
                 fileList.length > 0 ? (
